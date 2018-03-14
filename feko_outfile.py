@@ -1,4 +1,15 @@
-import numpy as np
+"""
+Functions to read data from outfile. Some of the scraping functions are a bit cowboy, but it works
+
+Hardie Pienaar
+Cavendish Lab
+March 2018 
+
+Would be nice to have:
+Load geometry connectivity data with basis functions
+VSH loading function
+Farfield loading function
+"""
 
 import numpy as np
 
@@ -18,6 +29,7 @@ def load_wire_currents(feko_filename):
     Segment - Wire segment number
     X,Y,Z - spatial coordinates in m
     Current_X,Y,Z - complex currents in each axis
+    Length - length of wire segment in m
     """
 
     # Initialise logic
@@ -100,7 +112,7 @@ def load_wire_currents(feko_filename):
 
 def load_rwg_currents(feko_filename):
     """
-    Reads a feko .out file and extracts the wire currents. The wire currents
+    Reads a feko .out file and extracts the currents on triangle basis functions. The trianlge currents
     are stored in a dictionary dataset. 
     
     arguments:
@@ -110,10 +122,12 @@ def load_rwg_currents(feko_filename):
         dataset - list of {Frequency, Data}(see dictionary layout below)
 
     Data = {Segment, X, Y, Z, Current_X, Current_Y, Current_Z}
-    Frequency - frequency in Hz
-    Segment - Wire segment number
-    X,Y,Z - spatial coordinates in m
-    Current_X,Y,Z - complex currents in each axis
+    	Frequency - frequency in Hz
+    	Segment - Triangle number
+    	X,Y,Z - spatial coordinates in m
+    	Current_X,Y,Z - complex currents in each axis
+    	Triangle_1,2,3 - spatial coordinates for triangle points
+    	Area - area of triangle in m^2
     """
 
     # Initialise logic
