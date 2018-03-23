@@ -1,5 +1,6 @@
 """
-Functions to read data from outfile. Some of the scraping functions are a bit cowboy, but it works
+Functions to read data from outfile. Some of the scraping functions are a bit 
+cowboy, but it works.
 
 Hardie Pienaar
 Cavendish Lab
@@ -69,15 +70,15 @@ def load_wire_currents(feko_filename):
             # Logic to detect certain parts of the file
             # Scrape logic to grab line lengths
             if segment_data_countdown == 0: # Store length
-            	length.append(float(row[5]))
-            	segment_data_countdown = 3
+                length.append(float(row[5]))
+                segment_data_countdown = 3
             if segment_data_countdown >= 0: # Skip until we reach length data
-            	segment_data_countdown = segment_data_countdown - 1
+                segment_data_countdown = segment_data_countdown - 1
             if "SEGMENTS\n" in row and len(row)==4: # Detect the start of length data
-            	segment_data_countdown = 5
-            	length = []
+                segment_data_countdown = 5
+                length = []
             if len(row) == 1 and len(length) > 0: # Detect the end of length data
-            	segment_data_countdown = -1 
+                segment_data_countdown = -1 
             if "Frequency" in row and frequency != float(row[5]):
                 frequency = float(row[5])
                 print("Reading freq: "+str(frequency/1e6)+" MHz", end="\r")
@@ -122,12 +123,12 @@ def load_rwg_currents(feko_filename):
         dataset - list of {Frequency, Data}(see dictionary layout below)
 
     Data = {Segment, X, Y, Z, Current_X, Current_Y, Current_Z}
-    	Frequency - frequency in Hz
-    	Segment - Triangle number
-    	X,Y,Z - spatial coordinates in m
-    	Current_X,Y,Z - complex currents in each axis
-    	Triangle_1,2,3 - spatial coordinates for triangle points
-    	Area - area of triangle in m^2
+        Frequency - frequency in Hz
+        Segment - Triangle number
+        X,Y,Z - spatial coordinates in m
+        Current_X,Y,Z - complex currents in each axis
+        Triangle_1,2,3 - spatial coordinates for triangle points
+        Area - area of triangle in m^2
     """
 
     # Initialise logic
@@ -166,17 +167,17 @@ def load_rwg_currents(feko_filename):
             # Logic to detect certain parts of the file
             # Scrape logic to grab line lengths
             if segment_data_countdown == 0: # Store length
-            	length.append(float(row[3]))
-            	segment_data_countdown = 4
+                length.append(float(row[3]))
+                segment_data_countdown = 4
             if  segment_data_countdown == 1 and len(row) > 1:
-            	triangle_3.append([float(row[2]), float(row[3]), float(row[4])])
+                triangle_3.append([float(row[2]), float(row[3]), float(row[4])])
             if  segment_data_countdown == 2 and len(row) > 1:
-            	triangle_2.append([float(row[2]), float(row[3]), float(row[4])])
+                triangle_2.append([float(row[2]), float(row[3]), float(row[4])])
             if  segment_data_countdown == 3 and len(row) > 1:
-            	triangle_1.append([float(row[2]), float(row[3]), float(row[4])])
-        		
+                triangle_1.append([float(row[2]), float(row[3]), float(row[4])])
+                
             if segment_data_countdown >= 0: # Skip until we reach length data
-            	segment_data_countdown = segment_data_countdown - 1
+                segment_data_countdown = segment_data_countdown - 1
             if "TRIANGLES\n" in row and len(row)==5: # Detect the start of length data
                 segment_data_countdown = 8
                 length = []  
