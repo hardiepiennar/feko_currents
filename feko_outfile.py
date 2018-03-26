@@ -220,3 +220,72 @@ def load_rwg_currents(feko_filename):
                 frequency == None
 
     return dataset
+
+def load_farfield(feko_filename):
+    """
+    Reads a feko .out file and extracts the farfield data
+    
+    arguments:
+        feko_filename
+
+    returns: 
+        dataset - list of {Frequency, Data}(see dictionary layout below)
+
+    Data = {Theta, Phi, E_Theta, E_Phi}
+        Theta - numpy array of angles in radians
+        Phi = numpy array of angles in radians
+        E_Theta = numpy array of electric fields (Farfield approx V/m) 
+        E_Phi = numpy array of electric fields (Farfield approx V/m) 
+    """
+
+    # Initialise logic
+    found_farfield_start = False
+
+    # Create storage structures
+    frequency = 0
+    dataset = []
+    theta = []
+    phi = []
+    e_theta = []
+    e_phi = []
+
+    # Open file and start reading
+    f = open(feko_filename,'r')
+
+    # Loop over every row in the file
+    with open(feko_filename) as f:
+        for line in f:
+            # Filter empty strings
+            row_raw = line.split(' ')
+            row = list(filter(None, row_raw))
+
+            # Read the currents into the current frequency object
+            if found_farfield_start and len(row) != 1:
+                theta.append(float(row[0])*np.pi/180)
+                phi.append(float(row[1])*np.pi/180)
+                e_theta.append(float(row[2])*np.exp(1j*float(row[3])*np.pi/180))
+                e_phi.append(float(row[4])*np.exp(1j*float(row[5])*np.pi/180))
+
+            # Logic to detect certain parts of the file
+            if "Frequency" in row and frequency != float(row[5]):
+                frequency = float(row[5])
+                print("Reading freq: "+str(frequency/1e6)+" MHz", end="\r")
+            if "THETA" in row and len(row)==13: # Detect the start of length data
+                theta = []  
+                phi = []
+                e_theta = []
+                e_phi = []
+                found_farfield_start = True
+            elif found_farfield_start and len(row) == 1:
+                found_farfield_start = False
+
+                # Create the data block and append it to our dataset
+                data = {"Theta":np.array(theta), 
+                        "Phi":np.array(phi), 
+                        "E_Theta":np.array(e_theta), 
+                        "E_Phi":np.array(e_phi)}
+                dataset.append({"Frequency":frequency, "Data":data.copy()})
+
+                frequency == None
+
+    return dataset
