@@ -148,3 +148,27 @@ def calc_position_phase_offsets(positions, farfield_coords, frequency):
 
   return phase_offsets
 
+def gen_gridlist_from_values(theta, phi):
+  """
+    Generates farfield list of coordinates at the given theta phi values
+
+    arguments:
+      theta - [Nx1] numpy array of angle values in radians
+      phi -   [Nx1] numpy array of angle values in radians
+
+    returns:
+      gridlist - [Nx2] numpy array of coordinates for the given theta phi values
+  """
+  # Create grid of coordinates
+  theta_grid, phi_grid = np.meshgrid(theta, phi)
+  # Flatten the grid to form lists of farfield theta and phi coordinates
+  theta_coords = theta_grid.flatten()
+  theta_coords = theta_coords.reshape(len(theta_coords),1)
+  phi_coords = phi_grid.flatten()
+  phi_coords = phi_coords.reshape(len(phi_coords),1)
+  # Create a Nx2 array of theta phi farfield coordinates where N is the number of farfield points
+  gridlist = np.zeros((theta_coords.shape[0], theta_coords.shape[1]*2)) 
+  gridlist[:, 0] = theta_coords[:,0]
+  gridlist[:, 1] = phi_coords[:,0]
+
+  return gridlist
