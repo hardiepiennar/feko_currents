@@ -6,7 +6,6 @@ Hardie Pienaar
 Cavendish
 March 2018
 """
-
 import numpy as np
 import matplotlib.pyplot as plt
 import feko_outfile
@@ -21,6 +20,10 @@ wire_currents = feko_outfile.load_wire_currents(filename)
 
 # Load farfields to test against
 farfields = feko_outfile.load_farfield(filename)
+farfield_coords = np.zeros((len(farfields[0]["Data"]["Theta"]),2))
+farfield_coords[:, 0] = farfields[0]["Data"]["Theta"]
+farfield_coords[:, 1] = farfields[0]["Data"]["Phi"]
+print(farfield_coords.shape)
 
 # Plot the currents on the x-aligned dipole
 if False:
@@ -45,13 +48,16 @@ if False:
 
 # Calculate E-Field position_factor
 # Loop over all wire segments and calculate electric field at zenith
-theta = np.linspace(0,np.pi,21)
-phi = np.linspace(0,0,1)
+# Grab the currents from our dataset
+pos_x = wire_currents[0]["Data"]["X"]
+pos_y = wire_currents[0]["Data"]["Y"]
+pos_z = wire_currents[0]["Data"]["Z"]
+pos = np.array([pos_x, pos_y, pos_z]).transpose()
 
-theta_grid, phi_grid = np.meshgrid(theta, phi)
+fc.calc_position_phase_offsets(pos, farfield_coords, wire_currents[0]["Frequency"])
 
 # Calculate far-fields
-calced_farfield = fc.calc_e_field_from_wire_currents(theta_grid, phi_grid, 
+calced_farfield = fc.calc_e_field_from_wire_currents(farfield_coords, 
                                                      wire_currents[0])
 
 if False:
@@ -60,13 +66,20 @@ if False:
     plt.figure()
     plt.contourf(theta_grid, phi_grid, np.abs(calced_farfield["E_Phi"]))
 
-print(theta_grid)
-theta_c = theta_grid[0]
-e_theta_c = np.abs(calced_farfield["E_Theta"][0])
+theta_c = calced_farfield["Theta"][calced_farfield["Phi"]==0]
+e_theta_c = np.abs(calced_farfield["E_Theta"][calced_farfield["Phi"]==0])
 theta_s = farfields[0]["Data"]["Theta"][farfields[0]["Data"]["Phi"] == 0]
 e_theta_s = np.abs(farfields[0]["Data"]["E_Theta"][farfields[0]["Data"]["Phi"] == 0])
 
-plt.figure()
-plt.plot(theta_c, e_theta_c)
-plt.plot(theta_s, e_theta_s)
-plt.show()
+if False:
+	plt.figure()
+	plt.plot(theta_s, e_theta_s, linewidth=5, alpha=0.5, color='red')
+	plt.plot(theta_c, e_theta_c, linewidth=2.5, alpha=1, color='black')
+	plt.show()
+
+# Calculate the full 3d pattern and compare with feko results
+error = np.sum(np.abs(calced_farfield["E_Theta"] - farfields[0]["Data"]["E_Theta"]))
+
+print("Checking field calculation accuracy...")
+assert(error < 0.6)
+print("[PASS]")
